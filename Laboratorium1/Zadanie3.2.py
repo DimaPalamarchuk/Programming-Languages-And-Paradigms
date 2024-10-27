@@ -1,0 +1,1 @@
+#podejście funkcyjne
