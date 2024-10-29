@@ -1,6 +1,6 @@
 #podejscie proceduralne
 
-def optymalizacja(zadanie):
+def proceduralne(zadanie):
     sortowane = sorted(zadanie, key=lambda x: x['czas'])
     calkowity_czas = 0
     aktualny_czas = 0
@@ -19,6 +19,6 @@ zadanie = [
     {'id': 4, 'czas': 1, 'nagroda': 5}
 ]
 
-kolejnosc, calkowity_czas = optymalizacja(zadanie)
+kolejnosc, calkowity_czas = proceduralne(zadanie)
 print("Optymalna kolejność zadań:", kolejnosc)
 print("Całkowity czas oczekiwania:", calkowity_czas)

@@ -1,6 +1,6 @@
 #podejście proceduralne
 
-def plecak_dynamiczne(wagi, wartosci, pojemnosc):
+def dynamiczny(wagi, wartosci, pojemnosc):
     n = len(wartosci)
     dp = [[0 for _ in range(pojemnosc + 1)] for _ in range(n + 1)]
     for i in range(1, n + 1):
@@ -24,7 +24,7 @@ def plecak_dynamiczne(wagi, wartosci, pojemnosc):
 wagi = [2, 3, 4, 5]
 wartosci = [3, 4, 5, 6]
 pojemnosc = 5
-maks_wartosc, przedmioty = plecak_dynamiczne(wagi, wartosci, pojemnosc)
+maks_wartosc, przedmioty = dynamiczny(wagi, wartosci, pojemnosc)
 print("Maksymalna wartość:", maks_wartosc)
 print("Wybrane przedmioty:", przedmioty)
 
