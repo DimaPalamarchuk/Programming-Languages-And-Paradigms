@@ -1,94 +1,128 @@
-﻿// Zadanie 1
-open System
-// Book
-type Book(title: string, author: string, pages: int) =
-    member this.Title = title
-    member this.Author = author
-    member this.Pages = pages
+﻿open System
+open System.Collections.Generic
 
-    // Metoda
+// Zadanie 2
+// BankAccount
+type BankAccount(accountNumber: string, initialBalance: decimal) =
+    let mutable balance = initialBalance
+
+    member this.AccountNumber = accountNumber
+    member this.Balance = balance
+
+    member this.Deposit(amount: decimal) =
+        if amount > 0m then
+            balance <- balance + amount
+            printfn "Wpłacono %.2f na konto %s" amount this.AccountNumber
+        else
+            printfn "Kwota wpłaty musi być większa niż 0"
+
+    member this.Withdraw(amount: decimal) =
+        if amount > 0m && amount <= balance then
+            balance <- balance - amount
+            printfn "Wypłacono %.2f z konta %s" amount this.AccountNumber
+        elif amount > balance then
+            printfn "Nie wystarczające środki na koncie %s" this.AccountNumber
+        else
+            printfn "Kwota wypłaty musi być większa niż 0"
+
     member this.GetInfo() =
-        sprintf "Tytuł: %s, Autor: %s, Liczba stron: %d" this.Title this.Author this.Pages
-        // printfn - wypisywanie na konsole
-        // sprintf - wypisanie ciągu znaków
+        sprintf "Konto: %s, Saldo: %.2f" this.AccountNumber this.Balance
 
-
-// User
-type User(name: string) =
-
-    // Lista książek
-    let borrowBooks = System.Collections.Generic.List<Book>()
-    member this.Name = name
-
-    member this.BorrowedBook(book: Book) =
-        // BorrowBook
-        borrowBooks.Add(book)
-        printfn "%s wypożyczył książke: \"%s\"" this.Name book.Title // Jan Nowak wypożyczył książke: "Tytuł"
-
-    member this.ReturnBook(book: Book) =
-        if borrowBooks.Contains(book) then
-            borrowBooks.Remove(book)
-            printfn "%s zwrócił książke: \"%s\"" this.Name book.Title
+// Bank
+type Bank() =
+    let accounts = Dictionary<string, BankAccount>()
+    // Stworzyć konto
+    member this.CreateAccount(accountNumber: string, initialBalance: decimal) =
+        if not (accounts.ContainsKey(accountNumber)) then
+            let account = BankAccount(accountNumber, initialBalance)
+            accounts.Add(accountNumber, account)
+            printfn "Utworzono konto %s z początkowym saldem %.2f" accountNumber initialBalance
         else
-            printfn "%s nie ma książki do zwrócenia \"%s\"" this.Name book.Title
+            printfn "Konto o numerze %s już istnieje" accountNumber
+            
+            member this.GetAccount(accountNumber: string) =
+        if accounts.ContainsKey(accountNumber) then
+            Some(accounts.[accountNumber])
+        else
+            printfn "Konto o numerze %s nie znaleziono" accountNumber
+            None
 
-    // metoda do wyświetlenie listy książek wypożyczonych
-    member this.ListBorrowBooks() =
-        if borrowBooks.Count > 0 then
-            borrowBooks
-            |> Seq.map (fun book -> book.GetInfo())
+    member this.UpdateAccount(accountNumber: string, amount: decimal, isDeposit: bool) =
+        match this.GetAccount(accountNumber) with
+        | Some(account) ->
+            if isDeposit then
+                account.Deposit(amount)
+            else
+                account.Withdraw(amount)
+        | None -> ()
+
+    member this.DeleteAccount(accountNumber: string) =
+        if accounts.Remove(accountNumber) then
+            printfn "Konto %s zostało usunięte" accountNumber
+        else
+            printfn "Konto o numerze %s nie znaleziono" accountNumber
+            // metoda do wyświetlenie listy utworzonych kontów
+    member this.ListAccounts() =
+        if accounts.Count > 0 then
+            accounts.Values
+            |> Seq.map (fun account -> account.GetInfo())
             |> String.concat "\n"
-            |> printfn "Książki wypożyczone przez %s:\n%s" this.Name
+            |> printfn "Lista kont:\n%s"
         else
-            printfn "%s nie ma wypożyczonych książek" this.Name
+            printfn "Brak dostępnych kont"
 
-type Library() =
-    let mutable books = System.Collections.Generic.List<Book>()
-
-    member this.AddBook(book: Book) =
-        books.Add(book)
-        printfn "Książka \"%s\" została dodana" book.Title
-    
-    member this.RemoveBook(book: Book) =
-        if books.Contains(book) then
-            books.Remove(book)
-            printfn "Książka \"%s\" została usunięta" book.Title
-        else
-            printfn "Nie znaleziono książki"
-
-     member this.ListBooks() =
-        if books.Count > 0 then
-            books
-            |> Seq.map (fun book -> book.GetInfo())
-            |> String.concat "\n"
-            |> printfn "Książki w bibliotece: \n%s"
-        else
-            printfn "W bibliotece nie ma książek"
-
+// Program główny
 let main() =
-    // Obiekty klas
-    let library = Library()
-    let user = User("Jan")
+    let bank = Bank()
+    let mutable exitProgram = false
+    // zarządzanie aplikacją
+    while not exitProgram do
+        printfn "\nMenu:"
+        printfn "1. Utwórz konto"
+        printfn "2. Wyświetl konto"
+        printfn "3. Wpłać środki"
+        printfn "4. Wypłać środki"
+        printfn "5. Usuń konto"
+        printfn "6. Pokaż wszystkie konta"
+        printfn "0. Wyjdź"
 
-    // Książki
-    let book1 = Book("Książka 1", "Autor 1", 123)
-    let book2 = Book("Książka 2", "Autor 2", 1234)
-    let book3 = Book("Książka 3", "Autor 3", 12335)
-    let book4 = Book("Książka 4", "Autor 4", 12367)
-
-    // Dodanie do biblioteki
-    library.AddBook(book1)
-    library.AddBook(book2)
-    library.AddBook(book3)
-    library.AddBook(book4)
-
-    // Wyświetlenie ksiażek w bibliotece
-    library.ListBooks()
-
-    user.ListBorrowBooks()
-
-    // Zwrot książki
-    user.ReturnBook(book1)
-    user.ListBorrowBooks()
+        printf "Wybierz opcję: "
+        match Console.ReadLine() with
+        | "1" ->
+            printf "Podaj numer konta: "
+            let accountNumber = Console.ReadLine()
+            printf "Podaj początkowe saldo: "
+            match Decimal.TryParse(Console.ReadLine()) with
+            | (true, initialBalance) ->
+                bank.CreateAccount(accountNumber, initialBalance)
+            | _ ->
+                printfn "Nieprawidłowa kwota"
+        | "2" ->
+            printf "Podaj numer konta: "
+            let accountNumber = Console.ReadLine()
+            match bank.GetAccount(accountNumber) with
+            | Some(account) -> printfn "%s" (account.GetInfo())
+            | None -> ()
+        | "3" ->
+            printf "Podaj numer konta: "
+            let accountNumber = Console.ReadLine()
+            printf "Podaj kwotę wpłaty: "
+            match Decimal.TryParse(Console.ReadLine()) with
+            | (true, amount) -> bank.UpdateAccount(accountNumber, amount, true)
+            | _ -> printfn "Nieprawidłowa kwota"
+        | "4" ->
+            printf "Podaj numer konta: "
+            let accountNumber = Console.ReadLine()
+            printf "Podaj kwotę wypłaty: "
+            match Decimal.TryParse(Console.ReadLine()) with
+            | (true, amount) -> bank.UpdateAccount(accountNumber, amount, false)
+            | _ -> printfn "Nieprawidłowa kwota"
+        | "5" ->
+            printf "Podaj numer konta: "
+            let accountNumber = Console.ReadLine()
+            bank.DeleteAccount(accountNumber)
+        | "6" -> bank.ListAccounts()
+        | "0" -> exitProgram <- true
+        | _ -> printfn "Nieprawidłowa opcja. Spróbuj ponownie."
 
 main()
